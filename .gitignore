@@ -1,0 +1,4 @@
+.idea
+MNIST_data
+.pytest_cache
+test/__pycache__/
