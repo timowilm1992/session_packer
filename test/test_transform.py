@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-
 from src.transform import transform_detailed_reco, transform_example, schema, drop_images
 
 

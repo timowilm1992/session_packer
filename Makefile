@@ -9,13 +9,13 @@ install-gpu:
 	conda env update --file ./gpu_environment.yml
 
 test:
-	source activate session-packer && pytest
+	source activate fick && pytest
 
 run:
-	source activate session-packer && python -m src.main 'test/resources/dataset' 'model' 0
+	source activate fick && python -m src.main 'test/resources/dataset' 'model' 0
 
 run-gpu:
-	source activate session-packer && optirun python -m src.main 'test/resources/dataset' 'model' 0
+	source activate fick && optirun python -m src.main 'test/resources/dataset' 'model' 0
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +

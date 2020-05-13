@@ -3,8 +3,11 @@ import json
 import os
 import shutil
 import logging
+from functools import partial
+
 from tensorflow.python.lib.io.tf_record import TFRecordWriter, TFRecordCompressionType
 from tensorflow.python.lib.io.tf_record import TFRecordOptions
+
 from src.records import to_sequence_example
 from src.transform import transform_example, drop_images, schema
 
@@ -42,20 +45,27 @@ def write(data_path, session_packer_path, type='train'):
     out_path = f'{session_packer_path}/{type}'
     with gzip.open(f'{data_path}/{type}.gz', 'r') as file:
         partfile_number = 0
+        buffer = []
+        ctx_schema = None
+        seq_schema = None
 
         for i, ex_str in enumerate(file):
 
-            if (i + 1) % (FILESIZE + 1) == 0:
-                partfile_number += 1
+            example = json.loads(ex_str.decode())
+            example = transform_example(example)
+            drop_images(transformed_example=example)
 
-            part = get_part_filename(partfile_number)
-            with TFRecordWriter(f'{out_path}/{part}', TFRecordOptions(compression_type=TFRecordCompressionType.GZIP)) as writer:
-                example = json.loads(ex_str.decode())
-                example = transform_example(example)
-                drop_images(transformed_example=example)
-                ctx_schema, seq_schema = schema(example)
-                seq_example = to_sequence_example(ctx_schema, seq_schema, example)
-                writer.write(seq_example.SerializeToString())
+            buffer.append(example)
+
+            if len(buffer) == FILESIZE:
+                part = get_part_filename(partfile_number)
+                with TFRecordWriter(f'{out_path}/{part}', TFRecordOptions(compression_type=TFRecordCompressionType.GZIP)) as writer:
+                    ctx_schema, seq_schema = schema(example)
+                    seq_examples = map(partial(to_sequence_example, ctx_schema, seq_schema),buffer)
+                    [writer.write(seq_example.SerializeToString()) for seq_example in seq_examples]
+                partfile_number += 1
+                buffer = []
+
     write_schema(ctx_schema, out_path, 'context_schema')
     write_schema(seq_schema, out_path, 'sequence_schema')
     write_success_file(out_path)

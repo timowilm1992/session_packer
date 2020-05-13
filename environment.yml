@@ -1,4 +1,4 @@
-name: session-packer
+name: fick
 channels:
   - conda-forge
 dependencies:

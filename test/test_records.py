@@ -4,10 +4,9 @@ from tensorboard.compat.tensorflow_stub.dtypes import int64, float32
 from tensorflow import FixedLenFeature
 from tensorflow import FixedLenSequenceFeature
 from tensorflow import parse_single_sequence_example
-from tensorflow.python.framework.test_util import TensorFlowTestCase
 from tensorflow.python.lib.io.tf_record import TFRecordCompressionType, TFRecordOptions, TFRecordWriter, \
     tf_record_iterator
-
+from tensorflow.python.framework.test_util import TensorFlowTestCase
 from src.records import to_sequence_example, build_schema
 
 test_dir = pathlib.Path(__file__).parent
